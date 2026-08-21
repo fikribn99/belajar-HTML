@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Archive - Student Archive with Profile</title>
+    <style>
+        :root {
+            --ba-blue: #1281f9;
+            --ba-pink: #fbc2eb;
+            --ba-sky: #dff0ff;
+            --ba-dark: #2d3748;
+            --striker-orange: #ff4d4d;
+            --special-blue: #2b6cb0;
+            --attack-explosive: #ff4d4d;
+            --attack-piercing: #ffcc00;
+            --attack-mystic: #33ccff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* --- LATAR BELAKANG UTAMA BLUE ARCHIVE --- */
+        body {
+            background: linear-gradient(135deg, #e3f2fd 0%, #fbc2eb 50%, #c3dafe 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efek Grid Taktis & Pola Geometris */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(18, 129, 249, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 129, 249, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* Efek Partikel Cahaya Melayang */
+        .bg-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Bentuk Belah Ketupat */
+            animation: floatParticle 12s linear infinite;
+        }
+
+        .p1 { width: 15px; height: 15px; left: 10%; animation-delay: 0s; animation-duration: 14s; }
+        .p2 { width: 25px; height: 25px; left: 30%; animation-delay: 2s; animation-duration: 18s; background: rgba(18, 129, 249, 0.2); }
+        .p3 { width: 10px; height: 10px; left: 75%; animation-delay: 5s; animation-duration: 10s; }
+        .p4 { width: 20px; height: 20px; left: 85%; animation-delay: 1s; animation-duration: 15s; background: rgba(251, 194, 235, 0.4); }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Container Utama */
+        .archive-container {
+            position: relative;
+            width: 95%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 1;
+        }
+
+        /* Header Menu */
+        .archive-header {
+            border-bottom: 3px solid rgba(255, 255, 255, 0.6);
+            padding-bottom: 10px;
+            color: var(--ba-dark);
+            font-style: italic;
+        }
+        .archive-header h2 {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #1a365d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .archive-header h2::before {
+            content: '❖';
+            color: var(--ba-blue);
+        }
+
+        /* GRID UNTUK 4 KARAKTER */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        /* Kartu Karakter dengan Efek Kaca (Glassmorphism) */
+        .char-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+        }
+
+        /* Wrapper Foto 1:1 */
+        .img-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: rgba(226, 232, 240, 0.5);
+            position: relative;
+        }
+
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        /* PANEL PROFIL OVERLAY (YANG MUNCUL SAAT HOVER) */
+        .profile-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 32, 44, 0.95); 
+            color: #fff;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0; 
+            transform: translateY(100%); 
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 5;
+        }
+
+        .profile-title {
+            font-size: 13px;
+            color: var(--ba-blue);
+            text-transform: uppercase;
+            font-weight: 800;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .profile-detail {
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-detail span.lbl {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .profile-detail span.val {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .atk-explosive { color: var(--attack-explosive); font-weight: bold; }
+        .atk-piercing { color: var(--attack-piercing); font-weight: bold; }
+        .atk-mystic { color: var(--attack-mystic); font-weight: bold; }
+
+        /* ANIMASI HOVER KARTU */
+        .char-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--ba-blue);
+            box-shadow: 0 20px 35px rgba(18, 129, 249, 0.25);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .char-card:hover .profile-overlay {
+            opacity: 1;
+            transform: translateY(0); 
+        }
+
+        /* Status Aktif saat Diklik */
+        .char-card.active {
+            border-color: var(--ba-blue);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 25px rgba(18, 129, 249, 0.4);
+        }
+
+        /* Info Singkat di Bawah Foto */
+        .char-info {
+            padding: 15px;
+            text-align: center;
+            background: transparent;
+            position: relative;
+            z-index: 6; 
+        }
+        .char-info h3 {
+            font-size: 20px;
+            color: var(--ba-dark);
+            font-weight: 800;
+        }
+        .char-role {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+        .role-striker { color: var(--striker-orange); }
+        .role-special { color: var(--special-blue); }
+
+        /* KOTAK DIALOG INTERAKTIF REPLIKA MOBIL GAME UI */
+        .dialogue-system {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-left: 6px solid var(--ba-blue);
+            border-top: 1px solid rgba(255,255,255,0.5);
+            border-right: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 25px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            min-height: 125px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .dialogue-name {
+            font-size: 22px;
+            font-weight: 850;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .dialogue-quote {
+            font-size: 16px;
+            color: #334155;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            body { overflow-y: auto; height: auto; padding: 20px 0; }
+            .character-grid { grid-template-columns: repeat(2, 1fr); }
+            .archive-container { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Komponen Partikel Latar Belakang -->
+    <div class="bg-particles">
+        <div class="particle p1"></div>
+        <div class="particle p2"></div>
+        <div class="particle p3"></div>
+        <div class="particle p4"></div>
+    </div>
+
+    <div class="archive-container">
+        
+        <div class="archive-header">
+            <h2>S.C.H.A.L.E. Student Archive</h2>
+        </div>
+
+        <!-- GRID 4 KARAKTER -->
+        <div class="character-grid">
+            
+            <!-- Karakter 1: Eri -->
+            <div class="char-card active" onclick="changeQuote('Eri', 'Aku Shirao Eri, dari Klub Okultisme Akademi Seni Wildhunt. Dunia ini dipenuhi oleh keajaiban sihir. Ya, bahkan pertemuan kita ini pun adalah sihir!', this)">
+                <div class="img-wrapper">
+                    <img src="eri.png" alt="Eri">
+                    
+                    <div class="profile-overlay">
+                        <div class="profile-title">Student Profile</div>
+                        <div class="profile-detail"><span class="lbl">Academy:</span><span class="val">Wildhunt Art</span></div>
+                        <div class="profile-detail"><span class="lbl">Club:</span><span class="val">Occult Society</span></div>
+                        <div class="profile-detail"><span class="lbl">Weapon:</span><span class="val">SR (Sniper Rifle)</span></div>
+                        <div class="profile-detail"><span class="lbl">Birthday:</span><span class="val">October 31st</span></div>
+                        <div class="profile-detail"><span class="lbl">Attack Type:</span><span class="val atk-mystic">Mystic</span></div>
+                    </div>
+                </div>
+                <div class="char-info">
+                    <h3>Eri</h3>
+                    <div class="char-role role-striker">STRIKER</div>
+                </div>
+            </div>
+
+            <!-- Karakter 2: Hoshino -->
+            <div class="char-card" onclick="changeQuote('Hoshino', 'Uhe~ Selamat pagi, Sensei. Petinggi Komite Penanggulangan Takanashi Hoshino sudah siap bertugas... Hmmm, tapi bolehkah aku tidur sebentar lagi? Menjaga sekolah ini melelahkan tahu~', this)">
+                <div class="img-wrapper">
+                    <img src="hoshino.png" alt="Hoshino">
+                    
+                    <div class="profile-overlay">
+                        <div class="profile-title">Student Profile</div>
+                        <div class="profile-detail"><span class="lbl">Academy:</span><span class="val">Abydos High School</span></div>
+                        <div class="profile-detail"><span class="lbl">Club:</span><span class="val">Foreclosure Task Force</span></div>
+                        <div class="profile-detail"><span class="lbl">Weapon:</span><span class="val">SG (Shotgun)</span></div>
+                        <div class="profile-detail"><span class="lbl">Birthday:</span><span class="val">January 2nd</span></div>
+                        <div class="profile-detail"><span class="lbl">Attack Type:</span><span class="val atk-piercing">Piercing</span></div>
+                    </div>
+                </div>
+                <div class="char-info">
+                    <h3>Hoshino</h3>
+                    <div class="char-role role-striker">STRIKER</div>
+                </div>
+            </div>
+
+            <!-- Karakter 3: Akane -->
+            <div class="char-card" onclick="changeQuote('Akane', 'Saya Murogasa Akane, agen sekaligus pelayan dari Cleaning & Clearing Millennium. Apakah ada tugas pembersihan taktis hari ini, Sensei? Menjinakkan bom atau menyapu target, serahkan saja semuanya kepada saya.', this)">
+                <div class="img-wrapper">
+                    <img src="akane.png" alt="Akane">
+                    
+                    <div class="profile-overlay">
+                        <div class="profile-title">Student Profile</div>
+                        <div class="profile-detail"><span class="lbl">Academy:</span><span class="val">Millennium Science</span></div>
+                        <div class="profile-detail"><span class="lbl">Club:</span><span class="val">C&C (Cleaning & Clearing)</span></div>
+                        <div class="profile-detail"><span class="lbl">Weapon:</span><span class="val">HG (Handgun)</span></div>
+                        <div class="profile-detail"><span class="lbl">Birthday:</span><span class="val">April 1st</span></div>
+                        <div class="profile-detail"><span class="lbl">Attack Type:</span><span class="val atk-piercing">Piercing</span></div>
+                    </div>
+                </div>
+                <div class="char-info">
+                    <h3>Akane</h3>
+                    <div class="char-role role-special">SPECIAL</div>
+                </div>
+            </div>
+
+            <!-- Karakter 4: Hina -->
+            <div class="char-card" onclick="changeQuote('Hina', 'Sorasaki Hina, Kepala Komite Disiplin Gehenna. Dokumen pengacau dan laporan pelanggaran ini sama sekali tidak ada habisnya... Tapi, selagi kau ada di sisiku, Sensei... kurasa aku bisa bertahan sedikit lebih lama.', this)">
+                <div class="img-wrapper">
+                    <img src="hina.png" alt="Hina">
+                    
+                    <div class="profile-overlay">
+                        <div class="profile-title">Student Profile</div>
+                        <div class="profile-detail"><span class="lbl">Academy:</span><span class="val">Gehenna Academy</span></div>
+                        <div class="profile-detail"><span class="lbl">Club:</span><span class="val">Prefect Team</span></div>
+                        <div class="profile-detail"><span class="lbl">Weapon:</span><span class="val">MG (Machine Gun)</span></div>
+                        <div class="profile-detail"><span class="lbl">Birthday:</span><span class="val">February 19th</span></div>
+                        <div class="profile-detail"><span class="lbl">Attack Type:</span><span class="val atk-explosive">Explosive</span></div>
+                    </div>
+                </div>
+                <div class="char-info">
+                    <h3>Hina</h3>
+                    <div class="char-role role-striker">STRIKER</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- KOTAK DIALOG INTERAKTIF -->
+        <div class="dialogue-system">
+            <div class="dialogue-name" id="display-name">Eri</div>
+            <div class="dialogue-quote" id="display-quote">"Aku Shirao Eri, dari Klub Okultisme Akademi Seni Wildhunt. Dunia ini dipenuhi oleh keajaiban sihir. Ya, bahkan pertemuan kita ini pun adalah sihir!"</div>
+        </div>
+
+    </div>
+
+    <script {nonce}>
+        function changeQuote(name, quote, element) {
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('display-quote').innerText = `"${quote}"`;
+
+            const cards = document.querySelectorAll('.char-card');
+            cards.forEach(card => card.classList.remove('active'));
+
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>
